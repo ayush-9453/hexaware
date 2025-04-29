@@ -12,10 +12,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DonationDao{
+public class DonationDao implements IDonation{
 
-
-    public static void recordDonation(Donation donation) {
+    @Override
+    public void recordDonation(Donation donation) {
         String sql = "INSERT INTO donations (donor_name, amount, donation_type, donation_date, item_type) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DbConn.getConnection();
@@ -42,8 +42,8 @@ public class DonationDao{
         }
     }
 
-
-    public static List<Donation> getAllDonations() {
+    @Override
+    public List<Donation> getAllDonations() {
         List<Donation> list = new ArrayList<>();
         String sql = "SELECT * FROM donations";
 
@@ -57,13 +57,15 @@ public class DonationDao{
                 String type = rs.getString("donation_type");
 
                 if ("cash".equalsIgnoreCase(type)) {
-                    LocalDate date = rs.getDate("donation_date").toLocalDate();
+                    Date sqlDate = rs.getDate("donation_date");
+                    LocalDate date = (sqlDate != null) ? sqlDate.toLocalDate() : null;
                     list.add(new CashDonation(donorName, amount, date));
                 } else if ("item".equalsIgnoreCase(type)) {
                     String itemType = rs.getString("item_type");
                     list.add(new ItemDonation(donorName, amount, itemType));
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

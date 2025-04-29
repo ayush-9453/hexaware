@@ -15,6 +15,7 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         PetDao petDao = new PetDao();
         AdoptionDao event = new AdoptionDao();
+        DonationDao donation = new DonationDao();
 
         System.out.println("=== Welcome to Pet Adoption Center ===");
 
@@ -38,7 +39,7 @@ public class Main {
                     System.out.println("2. Add Cat");
                     System.out.print("Enter your choice: ");
                     int petChoice = sc.nextInt();
-                    sc.nextLine(); // consume leftover \n
+                    sc.nextLine();
 
                     if (petChoice == 1) {
                         System.out.print("Enter Dog ID: ");
@@ -79,9 +80,13 @@ public class Main {
 
                 case 2:
                     List<Pet> pets = petDao.showPets();
-                    System.out.println("\nAvailable Pets:");
-                    for (Pet p : pets) {
-                        System.out.println("[" + p.getPetType() + "] ID: " + p.getPetId() + " | Name: " + p.getName() + " | Age: " + p.getAge() + " years | Breed: " + p.getBreed());
+                    if (pets.isEmpty()){
+                        System.out.println("No Available Pets");
+                    }else{
+                        System.out.println("\nAvailable Pets:");
+                        for (Pet p : pets) {
+                            System.out.println("[" + p.getPetType() + "] ID: " + p.getPetId() + " | Name: " + p.getName() + " | Age: " + p.getAge() + " years | Breed: " + p.getBreed());
+                        }
                     }
                     break;
                 case 3:
@@ -157,9 +162,10 @@ public class Main {
 
                             System.out.print("Enter donation date (yyyy-mm-dd): ");
                             String dateInput = sc.nextLine();
+
                             LocalDate donationDate = LocalDate.parse(dateInput);
 
-                            DonationDao.recordDonation(new CashDonation(donorName, amount, donationDate));
+                            donation.recordDonation(new CashDonation(donorName, amount, donationDate));
                             System.out.println("Cash donation added successfully!");
                             break;
 
@@ -171,27 +177,47 @@ public class Main {
                             String itemType = sc.nextLine();
 
                             Donation itemDonation = new ItemDonation(donorNameItem, 0.0, itemType);
-                            DonationDao.recordDonation(itemDonation);
+                            donation.recordDonation(itemDonation);
                             System.out.println("Item donation added successfully!");
                             break;
-
-                        case 7:
-                            List<Donation> allDonations = DonationDao.getAllDonations();
-                            if (allDonations.isEmpty()) {
-                                System.out.println("No donations found.");
-                            } else {
-                                for (Donation donation : allDonations) {
-                                    System.out.println(donation);
-                                }
-                            }
-                            break;
-                        case 8:
-                            System.out.println("Thank you!");
-                            break;
                         default:
-                            System.out.println("Invalid choice! Please enter again.");
+                            System.out.println("Invalid Choice! Please enter again.");
+
                     }
+                case 7:
+                    List<Donation> allDonations = donation.getAllDonations();
+
+                    if (allDonations.isEmpty()) {
+                        System.out.println("No donations found.");
+                    } else {
+                        for (Donation donations : allDonations) {
+                            System.out.println("Donor Name: " + donations.getDonorName());
+                            System.out.println("Amount: " + donations.getAmount());
+
+                            if (donations instanceof CashDonation) {
+                                CashDonation cd = (CashDonation) donations;
+                                System.out.println("Type: Cash");
+                                System.out.println("Date: " + cd.getDonationDate());
+                            } else if (donations instanceof ItemDonation) {
+                                ItemDonation id = (ItemDonation) donations;
+                                System.out.println("Type: Item");
+                                System.out.println("Item Type: " + id.getItemType());
+                            }
+
+                            System.out.println("------------------------------");
+                        }
+                    }
+
+                    break;
+                case 8:
+                    System.out.println("Thank you!");
+                    sc.close();
+                    return;
+                default:
+                    System.out.println("Invalid choice! Please enter again.");
             }
+            sc.close();
         }
+
     }
 }
